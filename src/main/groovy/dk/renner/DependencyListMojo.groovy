@@ -33,7 +33,10 @@ class DependencyListMojo extends AbstractMojo {
             if (System.properties['os.name'].toLowerCase().contains('windows')) {
                 list = "cmd /c mvn -o dependency:list".execute().text
             } else {
-                list = "cmd /c mvn -o dependency:list".execute().text
+                getLog().debug(EXECSHELL("mvn -o dependency:list", mavenProject.basedir, OSEnum.OTHER) + "")
+                getLog().debug("STUFF: " + ["sh", "-c", "pwd"].execute().text)
+                list = ["sh", "-c", "mvn", "-f", mavenProject.basedir, "-o", "dependency:list"].execute().text
+                getLog().error(list)
             }
 
             def regex = getPattern(scope)
