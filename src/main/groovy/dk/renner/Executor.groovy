@@ -1,27 +1,44 @@
 package dk.renner
 
+import java.util.concurrent.TimeUnit
+
 class Executor {
 
-    public static def EXECSHELL(String command, File workingDir, OSEnum os) {
-        println command
-        def process = new ProcessBuilder(addShellPrefix(command, os))
+    public static getOS() {
+        String osName = System.properties['os.name']
+        if (osName.toLowerCase().contains('windows')) {
+            return OSEnum.WINDOWS
+        } else {
+            return OSEnum.OTHER
+        }
+    }
+
+    public static String executeOnShell(String command, File workingDir) {
+        def process = new ProcessBuilder(addShellPrefix(command))
                 .directory(workingDir)
                 .redirectErrorStream(true)
                 .start()
-        process.inputStream.eachLine { println it }
-        process.waitFor();
-        return process.exitValue()
+        def result = new StringBuilder()
+        process.inputStream.eachLine {
+            result.append(it).append('\n')
+        }
+        process.waitFor(15, TimeUnit.SECONDS)
+        process.destroy()
+        return result
     }
 
-    private static def addShellPrefix(String command, OSEnum os) {
-        def commandArray = new String[3]
-        if (os == OSEnum.WINDOWS) {
-            commandArray[0] = "cmd"
-        } else if (os == OSEnum.OTHER) {
+    private static List<String> addShellPrefix(String command) {
+        def commandArray
+        if (getOS() == OSEnum.WINDOWS) {
+            commandArray = new String[2]
+            commandArray[0] = "powershell"
+            commandArray[1] = command
+        } else if (getOS() == OSEnum.OTHER) {
+            commandArray = new String[3]
             commandArray[0] = "sh"
+            commandArray[1] = "-c"
+            commandArray[2] = command
         }
-        commandArray[1] = "-c"
-        commandArray[2] = command
         return commandArray
     }
 

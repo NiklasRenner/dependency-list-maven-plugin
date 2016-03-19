@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>dk.renner</groupId>
-    <artifactId>maven-dependency-list-plugin</artifactId>
-    <name>maven-dependency-list-plugin project</name>
+    <artifactId>dependency-list-maven-plugin</artifactId>
+    <name>dependency-list-maven-plugin project</name>
     <version>0.6.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 

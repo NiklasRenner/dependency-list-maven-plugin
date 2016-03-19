@@ -8,9 +8,10 @@ import org.apache.maven.plugins.annotations.Parameter
 import org.apache.maven.project.MavenProject
 
 import static dk.renner.Utils.*
+import static dk.renner.Executor.*
 
 @Mojo(defaultPhase = LifecyclePhase.TEST_COMPILE, name = "dependency-list", requiresDirectInvocation = false)
-class DependencyListMojo extends AbstractMojo {
+class KDependencyListMojo extends AbstractMojo {
 
     @Component
     private MavenProject mavenProject;
@@ -29,21 +30,13 @@ class DependencyListMojo extends AbstractMojo {
             def dependencyList = new ArrayList<Dependency>();
             def outputFile = new File("${mavenProject.build.directory}/dependencies.html")
 
-            def list
-            if (System.properties['os.name'].toLowerCase().contains('windows')) {
-                list = "cmd /c mvn -o dependency:list".execute().text
-            } else {
-                getLog().debug(EXECSHELL("mvn -o dependency:list", mavenProject.basedir, OSEnum.OTHER) + "")
-                getLog().debug("STUFF: " + ["sh", "-c", "pwd"].execute().text)
-                list = ["sh", "-c", "mvn", "-f", mavenProject.basedir, "-o", "dependency:list"].execute().text
-                getLog().error(list)
-            }
+            def commandOutput = executeOnShell("mvn -o dependency:list", mavenProject.basedir)
 
             def regex = getPattern(scope)
 
-            list.split("\n").each {
-                if (regex.matcher(it).find()) {
-                    def dependencyString = it.replace("[INFO]    ", "")
+            commandOutput.split("\n").each { String line ->
+                if (regex.matcher(line).find()) {
+                    def dependencyString = line.replace("[INFO]    ", "")
                     def dependencyStringList = dependencyString.split(":")
 
                     def dependency = new Dependency(
