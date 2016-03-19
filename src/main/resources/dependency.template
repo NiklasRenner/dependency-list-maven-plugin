@@ -1,0 +1,7 @@
+  <tr>
+    <td>{{groupId}}</td>
+    <td>{{artifactId}}</td>
+    <td>{{version}}</td>
+    <td>{{type}}</td>
+    <td>{{scope}}</td>
+  </tr>

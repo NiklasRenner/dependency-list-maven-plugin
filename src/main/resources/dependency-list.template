@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        h3 {
+            font-family: verdana, arial, sans-serif;
+            font-weight: normal;
+        }
+
+        table.table-style-one {
+            font-family: verdana, arial, sans-serif;
+            font-size: 11px;
+            color: #333333;
+            border-width: 1px;
+            border-color: #3A3A3A;
+            border-collapse: collapse;
+        }
+
+        table.table-style-one th {
+            border-width: 1px;
+            padding: 8px;
+            border-style: solid;
+            border-color: #3A3A3A;
+            background-color: #B3B3B3;
+        }
+
+        table.table-style-one td {
+            border-width: 1px;
+            padding: 8px;
+            border-style: solid;
+            border-color: #3A3A3A;
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+<h3>{{projectName}} dependencies</h3>
+
+<table class="table-style-one">
+    <thead>
+    <tr>
+        <th>GroupId</th>
+        <th>ArtifactId</th>
+        <th>Version</th>
+        <th>Type</th>
+        <th>Scope</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{dependencyList}}
+    </tbody>
+</table>
+
+</body>
+</html>

@@ -1,3 +1,10 @@
+## Maven build dirs
+**/target
+
+## Idea project files
+**/.idea*
+**/*.iml
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
