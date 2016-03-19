@@ -11,7 +11,7 @@ import static dk.renner.Utils.*
 import static dk.renner.Executor.*
 
 @Mojo(defaultPhase = LifecyclePhase.TEST_COMPILE, name = "dependency-list", requiresDirectInvocation = false)
-class KDependencyListMojo extends AbstractMojo {
+class DependencyListMojo extends AbstractMojo {
 
     @Component
     private MavenProject mavenProject;
