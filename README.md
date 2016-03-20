@@ -1,4 +1,4 @@
-# maven-dependency-list-plugin
+# dependency-list-maven-plugin
 Maven plugin written in Groovy, for creating a .html file containing a list of project dependencies
 
 ##### example use
