@@ -12,6 +12,7 @@ class Utils {
     static Pattern getPattern(String scope) {
         if (scope != null) {
             if (scope == COMPILE || scope == PROVIDED || scope == RUNTIME || scope == TEST) {
+                /* ~/regex/ is syntactic sugar to create a Pattern object that matches 'regex'  */
                 return ~/.*:.*:.*:.*:${scope}/
             }
         }
@@ -19,7 +20,7 @@ class Utils {
     }
 
     static boolean stringContainsWithList(String s, List<String> strings) {
-        /*can't return inside Closure! it just keeps iterating!*/
+        /* can't return inside Closure! eg. it keeps iterating if you use return inside .each(){ } */
         def result = false;
 
         if (strings == null) return result

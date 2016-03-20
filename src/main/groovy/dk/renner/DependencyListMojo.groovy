@@ -28,25 +28,25 @@ class DependencyListMojo extends AbstractMojo {
 
     void execute() {
         try {
-            def dependencyList = new ArrayList<Dependency>();
+            /* ${object} is used inside strings for string substitution, it gets replaced with object.toString() */
             def outputFile = new File("${mavenProject.build.directory}/dependencies.html")
 
             executeOnShell("mvn -q dependency:resolve", mavenProject.basedir)
             def commandOutput = executeOnShell("mvn -o dependency:list", mavenProject.basedir)
 
+            def dependencyList = new ArrayList<Dependency>();
             def regex = getPattern(scope)
-
             commandOutput.split("\n").each { String line ->
                 if (regex.matcher(line).find()) {
                     def dependencyString = line.replace("[INFO]    ", "")
-                    def dependencyStringList = dependencyString.split(":")
+                    def dependencyStringSplit = dependencyString.split(":")
 
                     def dependency = new Dependency(
-                            groupId: dependencyStringList[0],
-                            artifactId: dependencyStringList[1],
-                            type: dependencyStringList[2],
-                            version: dependencyStringList[3],
-                            scope: dependencyStringList[4]
+                            groupId: dependencyStringSplit[0],
+                            artifactId: dependencyStringSplit[1],
+                            type: dependencyStringSplit[2],
+                            version: dependencyStringSplit[3],
+                            scope: dependencyStringSplit[4]
                     )
 
                     if (!dependencyList.contains(dependency)) {
@@ -56,49 +56,51 @@ class DependencyListMojo extends AbstractMojo {
             }
 
             def iter = dependencyList.iterator()
-            while (iter.hasNext()){
+            while (iter.hasNext()) {
                 def dependency = iter.next()
 
-                if(stringContainsWithList(dependency.groupId, groupIdExcludes)  || stringContainsWithList(dependency.artifactId, artifactIdExcludes)  ){
+                if (stringContainsWithList(dependency.groupId, groupIdExcludes) || stringContainsWithList(dependency.artifactId, artifactIdExcludes)) {
                     iter.remove()
                 }
             }
 
+            /* <=> operator = compareTo() */
+            //TODO: move sort impl to Dependency.compareTo() & use .sort() without closure
             dependencyList.sort { x, y ->
                 if (x.groupId == y.groupId) {
+                    /* implied return */
                     x.artifactId <=> y.artifactId
                 } else {
                     x.groupId <=> y.groupId
                 }
             }
 
-            def templateDependencyString = this.getClass().getResource('/dependency.template').text
-            def dependencyListElementTemplate = new Template(template: templateDependencyString)
-
-            def dependencyListHtml = ""
+            def dependencyListElementTemplateString = this.getClass().getResource('/dependency.template').text
+            def dependencyListElementTemplate = new Template(template: dependencyListElementTemplateString)
+            def dependencyListElementsHtml = ""
 
             dependencyList.unique().each {
-                def map = [:]
+                /* empty (obj,obj) map initialization is done by using [:],
+                objects put in have their types evaluated in runtime,
+                so it can be used for all maps if you don't need typesafety */
+                def valueMap = [:]
+                valueMap.put("groupId", it.groupId)
+                valueMap.put("artifactId", it.artifactId)
+                valueMap.put("type", it.type)
+                valueMap.put("version", it.version)
+                valueMap.put("scope", it.scope)
 
-                map.put("groupId", it.groupId)
-                map.put("artifactId", it.artifactId)
-                map.put("type", it.type)
-                map.put("version", it.version)
-                map.put("scope", it.scope)
-
-                dependencyListHtml += dependencyListElementTemplate.merge(map)
+                dependencyListElementsHtml += dependencyListElementTemplate.merge(valueMap)
             }
 
-            def templateString = this.getClass().getResource('/dependency-list.template').text
-            def htmlTemplate = new Template(template: templateString)
+            def dependencyListTemplateString = this.getClass().getResource('/dependency-list.template').text
+            def dependencyListTemplate = new Template(template: dependencyListTemplateString)
 
-            def map = [:]
+            def valueMap = [:]
+            valueMap.put("dependencyList", dependencyListElementsHtml);
+            valueMap.put("projectName", mavenProject.build.finalName);
 
-            map.put("dependencyList", dependencyListHtml);
-            map.put("projectName", mavenProject.build.finalName);
-
-            outputFile.write(htmlTemplate.merge(map))
-
+            outputFile.write(dependencyListTemplate.merge(valueMap))
         } catch (Exception ex) {
             getLog().error(ex)
         }

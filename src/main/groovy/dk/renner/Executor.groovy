@@ -2,7 +2,8 @@ package dk.renner
 
 class Executor {
 
-    public static getOS() {
+    static OSEnum getOS() {
+        /* map.get(key) = map[key] */
         String osName = System.properties['os.name']
         if (osName.toLowerCase().contains('windows')) {
             return OSEnum.WINDOWS
@@ -11,20 +12,22 @@ class Executor {
         }
     }
 
-    public static String executeOnShell(String command, File workingDir) {
+    static String executeOnShell(String command, File workingDir) {
         def process = new ProcessBuilder(addShellPrefix(command))
                 .directory(workingDir)
                 .redirectErrorStream(true)
                 .start()
+
         def result = new StringBuilder()
         process.inputStream.eachLine {
             result.append(it).append('\n')
         }
+
         process.waitFor()
         return result
     }
 
-    private static List<String> addShellPrefix(String command) {
+    static List<String> addShellPrefix(String command) {
         def commandArray
         if (getOS() == OSEnum.WINDOWS) {
             commandArray = new String[2]
