@@ -56,5 +56,5 @@ this is not a fatal exception as the dependency is not used, and plugin should f
 * if plugin is run on a submodule, the parent project has to have been built previously
 
 ##### build
-* clone repo with `git clone https://github.com/NiklasRenner/maven-dependency-list-plugin.git`
+* clone repo with `git clone https://github.com/NiklasRenner/dependency-list-maven-plugin.git`
 * navigate to folder & run `mvn clean install`
