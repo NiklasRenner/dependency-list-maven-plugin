@@ -40,3 +40,17 @@ Maven plugin written in Groovy, for creating Maven a .html file containing a lis
 
 ##### output
 output of plugin is placed in '/target/dependencies.html' of the Maven project
+
+##### jdk 1.6 & under
+plugin will output error in maven log, concerning missing groovy dependency.
+
+```
+21-03-2016 00:35:17 org.codehaus.groovy.runtime.m12n.MetaInfExtensionModule newModule
+WARNING: Module [groovy-all] - Unable to load extension class [org.codehaus.groovy.runtime.NioGroovyMethods]
+```
+
+this is not a fatal exception as the dependency is not used, and plugin should finish succesfully.
+
+##### prerequisites
+* Maven v3.x+ needs to be on classpath.
+* If plugin is run on a submodule, the parent project has to have been built previously
