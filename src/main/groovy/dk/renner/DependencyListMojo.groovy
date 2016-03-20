@@ -7,7 +7,7 @@ import org.apache.maven.plugins.annotations.Mojo
 import org.apache.maven.plugins.annotations.Parameter
 import org.apache.maven.project.MavenProject
 
-import static dk.renner.Executor.executeOnShell
+import static dk.renner.Utils.executeOnShell
 import static dk.renner.Utils.getPattern
 import static dk.renner.Utils.stringContainsWithList
 
@@ -68,7 +68,7 @@ class DependencyListMojo extends AbstractMojo {
             //TODO: move sort impl to Dependency.compareTo() & use .sort() without closure
             dependencyList.sort { x, y ->
                 if (x.groupId == y.groupId) {
-                    /* implied return */
+                    /* 'return' keyword not needed */
                     x.artifactId <=> y.artifactId
                 } else {
                     x.groupId <=> y.groupId
@@ -88,7 +88,7 @@ class DependencyListMojo extends AbstractMojo {
                 valueMap.put("artifactId", it.artifactId)
                 valueMap.put("type", it.type)
                 valueMap.put("version", it.version)
-                valueMap.put("scope", it.scope)
+                valueMap.put("scope", it.scope)K
 
                 dependencyListElementsHtml += dependencyListElementTemplate.merge(valueMap)
             }
