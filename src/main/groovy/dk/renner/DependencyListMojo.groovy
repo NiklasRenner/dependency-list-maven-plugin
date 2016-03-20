@@ -7,8 +7,9 @@ import org.apache.maven.plugins.annotations.Mojo
 import org.apache.maven.plugins.annotations.Parameter
 import org.apache.maven.project.MavenProject
 
-import static dk.renner.Utils.*
-import static dk.renner.Executor.*
+import static dk.renner.Executor.executeOnShell
+import static dk.renner.Utils.getPattern
+import static dk.renner.Utils.stringContainsWithList
 
 @Mojo(defaultPhase = LifecyclePhase.TEST_COMPILE, name = "dependency-list", requiresDirectInvocation = false)
 class DependencyListMojo extends AbstractMojo {
@@ -17,10 +18,10 @@ class DependencyListMojo extends AbstractMojo {
     private MavenProject mavenProject;
 
     @Parameter
-    private String[] groupIdExcludes
+    private List<String> groupIdExcludes
 
     @Parameter
-    private String[] artifactIdExcludes
+    private List<String> artifactIdExcludes
 
     @Parameter(defaultValue = "compile")
     private String scope
@@ -30,6 +31,7 @@ class DependencyListMojo extends AbstractMojo {
             def dependencyList = new ArrayList<Dependency>();
             def outputFile = new File("${mavenProject.build.directory}/dependencies.html")
 
+            executeOnShell("mvn -q dependency:resolve", mavenProject.basedir)
             def commandOutput = executeOnShell("mvn -o dependency:list", mavenProject.basedir)
 
             def regex = getPattern(scope)
@@ -53,27 +55,12 @@ class DependencyListMojo extends AbstractMojo {
                 }
             }
 
-            if (groupIdExcludes != null) {
-                groupIdExcludes.each {
-                    def iterator = dependencyList.iterator()
+            def iter = dependencyList.iterator()
+            while (iter.hasNext()){
+                def dependency = iter.next()
 
-                    while (iterator.hasNext()) {
-                        if (iterator.next().groupId.contains(it)) {
-                            iterator.remove()
-                        }
-                    }
-                }
-            }
-
-            if (artifactIdExcludes != null) {
-                artifactIdExcludes.each {
-                    def iterator = dependencyList.iterator()
-
-                    while (iterator.hasNext()) {
-                        if (iterator.next().artifactId.contains(it)) {
-                            iterator.remove()
-                        }
-                    }
+                if(stringContainsWithList(dependency.groupId, groupIdExcludes)  || stringContainsWithList(dependency.artifactId, artifactIdExcludes)  ){
+                    iter.remove()
                 }
             }
 

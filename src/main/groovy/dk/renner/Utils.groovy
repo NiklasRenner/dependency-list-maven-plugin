@@ -18,4 +18,17 @@ class Utils {
         return ~/.*:.*:.*:.*:(compile|provided|runtime|test)/
     }
 
+    static boolean stringContainsWithList(String s, List<String> strings) {
+        /*can't return inside Closure! it just keeps iterating!*/
+        def result = false;
+
+        if (strings == null) return result
+
+        strings.each {
+            if (s.contains(it)) result = true
+        }
+
+        return result
+    }
+
 }

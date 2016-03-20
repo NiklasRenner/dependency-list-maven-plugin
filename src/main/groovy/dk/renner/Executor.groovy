@@ -1,7 +1,5 @@
 package dk.renner
 
-import java.util.concurrent.TimeUnit
-
 class Executor {
 
     public static getOS() {
@@ -32,7 +30,7 @@ class Executor {
             commandArray = new String[2]
             commandArray[0] = "powershell"
             commandArray[1] = command
-        } else if (getOS() == OSEnum.OTHER) {
+        } else {
             commandArray = new String[3]
             commandArray[0] = "sh"
             commandArray[1] = "-c"

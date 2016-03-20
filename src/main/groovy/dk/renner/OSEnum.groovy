@@ -1,6 +1,6 @@
 package dk.renner
 
-enum OSEnum{
+enum OSEnum {
 
     WINDOWS,
     OTHER
