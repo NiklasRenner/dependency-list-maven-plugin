@@ -22,8 +22,7 @@ class Executor {
         process.inputStream.eachLine {
             result.append(it).append('\n')
         }
-        process.waitFor(15, TimeUnit.SECONDS)
-        process.destroy()
+        process.waitFor()
         return result
     }
 
