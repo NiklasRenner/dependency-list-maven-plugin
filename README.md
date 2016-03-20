@@ -51,6 +51,10 @@ WARNING: Module [groovy-all] - Unable to load extension class [org.codehaus.groo
 
 this is not a fatal exception as the dependency is not used, and plugin should finish succesfully.
 
-##### prerequisites
+##### prerequisites to run
 * Maven v3.x+ needs to be on classpath.
-* If plugin is run on a submodule, the parent project has to have been built previously
+* if plugin is run on a submodule, the parent project has to have been built previously
+
+##### build
+* clone repo with `git clone https://github.com/NiklasRenner/maven-dependency-list-plugin.git`
+* navigate to folder & run `mvn clean install`
