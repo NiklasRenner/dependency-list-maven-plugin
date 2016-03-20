@@ -33,9 +33,9 @@ Maven plugin written in Groovy, for creating Maven a .html file containing a lis
 | key | value | description |
 | ------------- | ------------- | ----- |
 | groupIdExcludes | a list of groupId's, or parts of them, to exclude | see groupId |
-| groupId | a groupId, or part of one, that should be excluded | example: value 'com.example' matches any groupId containing the value. doesn't exclude transative dependencies of matches. |
+| groupId | a groupId, or part of one, that should be excluded | excludes any groupId containing the value. doesn't exclude transative dependencies of matches. |
 | artifactIdExcludes | a list of artifactId's, or parts of them, to exclude | see artifactId |
-| artifactId | a artifactId, or part of one, that should be excluded | example: value 'artifact' matches any artifactId containing the value. doesn't exclude transative dependencies of matches. |
+| artifactId | a artifactId, or part of one, that should be excluded | excludes any artifactId containing the value. doesn't exclude transative dependencies of matches. |
 | scope | 'compile', 'provided', 'runtime' or 'test' | scope determines which scope dependencies need to have to make the list |
 
 ##### output
