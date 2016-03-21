@@ -14,7 +14,10 @@ Maven plugin written in Groovy, for creating a .html file containing a list of p
               <goal>dependency-list</goal>
           </goals>
           <configuration>
-              <scope>compile</scope>
+              <scopes>
+                  <scope>compile</scope>
+                  <scope>runtime</scope>
+              </scopes>
               <groupIdExcludes>
                   <groupId>com.example1</groupId>
                   <groupId>com.example2</groupId>
@@ -36,6 +39,7 @@ Maven plugin written in Groovy, for creating a .html file containing a list of p
 | groupId | a groupId, or part of one, that should be excluded | excludes any groupId containing the value. doesn't exclude transative dependencies of matches. |
 | artifactIdExcludes | a list of artifactId's, or parts of them, to exclude | see artifactId |
 | artifactId | a artifactId, or part of one, that should be excluded | excludes any artifactId containing the value. doesn't exclude transative dependencies of matches. |
+| scopes | a list of scopes to exclude | see scope. default: include all scopes |
 | scope | 'compile', 'provided', 'runtime' or 'test' | scope determines which scope dependencies need to have to make the list |
 
 ##### output
@@ -52,7 +56,7 @@ WARNING: Module [groovy-all] - Unable to load extension class [org.codehaus.groo
 this is not a fatal exception as the dependency is not used, and plugin should finish succesfully.
 
 ##### prerequisites to run
-* Maven v3.x+ needs to be on classpath.
+* Maven 3.x
 * if plugin is run on a submodule, the parent project has to have been built previously
 
 ##### build
