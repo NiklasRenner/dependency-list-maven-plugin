@@ -51,9 +51,7 @@ class DependencyListMojo extends AbstractMojo {
             //filter dependencies & add to template
             dependencyList.sort().each {
                 //TODO: prettify filter
-                if (scopeIncluded(it.scope, scopes) &&
-                        !idExcluded(it.groupId, groupIdExcludes) &&
-                        !idExcluded(it.artifactId, artifactIdExcludes)) {
+                if (scopeIncluded(it.scope, scopes) && !idExcluded(it.groupId, groupIdExcludes) && !idExcluded(it.artifactId, artifactIdExcludes)) {
                     def valueMap = [:]
                     valueMap.put("groupId", it.groupId)
                     valueMap.put("artifactId", it.artifactId)
@@ -102,7 +100,7 @@ class DependencyListMojo extends AbstractMojo {
         }
     }
 
-    static boolean idExcluded(String s, List<String> strings) {
+    private static boolean idExcluded(String s, List<String> strings) {
         def result = false;
 
         if (strings != null) {
@@ -114,7 +112,7 @@ class DependencyListMojo extends AbstractMojo {
         result
     }
 
-    static boolean scopeIncluded(String scope, List<String> scopeIncludes) {
+    private static boolean scopeIncluded(String scope, List<String> scopeIncludes) {
         if (scopeIncludes == null) return true
 
         def result = false
