@@ -4,7 +4,7 @@ Maven plugin written in Groovy, for creating a .html file containing a list of p
 ##### why
 * to try out Groovy
 * to learn developing Maven plugins
-* to get a pretty formatted list of dependencies for a project
+* to get a formatted list of dependencies for a project
 
 ##### example use
 ```
