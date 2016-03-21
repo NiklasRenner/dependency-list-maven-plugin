@@ -13,7 +13,7 @@ import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder
 @Mojo(defaultPhase = LifecyclePhase.PACKAGE, name = "dependency-list", requiresDirectInvocation = false)
 class DependencyListMojo extends AbstractMojo {
 
-    /* escape dollarsign to avoid Groovy throwing a fit because of String substitution */
+    /* escape dollar sign to avoid Groovy throwing a fit because of String substitution */
     @Parameter(defaultValue = "\${localRepository}", readonly = true)
     private ArtifactRepository localRepository;
 
@@ -43,32 +43,26 @@ class DependencyListMojo extends AbstractMojo {
                 saveDependencies(it, dependencyList)
             }
 
-            //filter out dependencies with unwanted groupId's & artifactId's
-            def iter = dependencyList.iterator()
-            while (iter.hasNext()) {
-                def dependency = iter.next()
-                //TODO: prettify filter
-                if (!scopeIncluded(dependency.scope, scopes) ||
-                        idExcluded(dependency.groupId, groupIdExcludes) ||
-                        idExcluded(dependency.artifactId, artifactIdExcludes)) {
-                    iter.remove()
-                }
-            }
-
             //fill out html-template with Dependency data
             def dependencyTableElementTemplateString = this.getClass().getResource('/dependency-table-element.template').text
             def dependencyTableElementTemplate = new Template(template: dependencyTableElementTemplateString)
             def dependencyTableElementsString = ""
 
+            //filter dependencies & add to template
             dependencyList.sort().each {
-                def valueMap = [:]
-                valueMap.put("groupId", it.groupId)
-                valueMap.put("artifactId", it.artifactId)
-                valueMap.put("type", it.type)
-                valueMap.put("version", it.version)
-                valueMap.put("scope", it.scope)
+                //TODO: prettify filter
+                if (scopeIncluded(it.scope, scopes) &&
+                        !idExcluded(it.groupId, groupIdExcludes) &&
+                        !idExcluded(it.artifactId, artifactIdExcludes)) {
+                    def valueMap = [:]
+                    valueMap.put("groupId", it.groupId)
+                    valueMap.put("artifactId", it.artifactId)
+                    valueMap.put("type", it.type)
+                    valueMap.put("version", it.version)
+                    valueMap.put("scope", it.scope)
 
-                dependencyTableElementsString += dependencyTableElementTemplate.merge(valueMap)
+                    dependencyTableElementsString += dependencyTableElementTemplate.merge(valueMap)
+                }
             }
 
             def dependencyListTemplateString = this.getClass().getResource('/dependency-list.template').text
@@ -101,6 +95,7 @@ class DependencyListMojo extends AbstractMojo {
             if (!dependencyList.contains(dependency)) {
                 dependencyList.add(dependency)
             }
+
             node.children.each {
                 saveDependencies(it, dependencyList)
             }
