@@ -11,7 +11,7 @@ class Template {
             result = result.replace(wrap(it.key), it.value)
         }
 
-        return result
+        result
     }
 
     private static String wrap(String property) {

@@ -1,109 +1,133 @@
 package dk.renner
 
+import org.apache.maven.artifact.repository.ArtifactRepository
 import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugins.annotations.Component
 import org.apache.maven.plugins.annotations.LifecyclePhase
 import org.apache.maven.plugins.annotations.Mojo
 import org.apache.maven.plugins.annotations.Parameter
 import org.apache.maven.project.MavenProject
+import org.apache.maven.shared.dependency.tree.DependencyNode
+import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder
 
-import static dk.renner.Utils.executeOnShell
-import static dk.renner.Utils.getPattern
-import static dk.renner.Utils.stringContainsWithList
-
-@Mojo(defaultPhase = LifecyclePhase.TEST_COMPILE, name = "dependency-list", requiresDirectInvocation = false)
+@Mojo(defaultPhase = LifecyclePhase.PACKAGE, name = "dependency-list", requiresDirectInvocation = false)
 class DependencyListMojo extends AbstractMojo {
 
-    @Component
-    private MavenProject mavenProject;
+    /* escape dollarsign to avoid Groovy throwing a fit because of String substitution */
+    @Parameter(defaultValue = "\${localRepository}", readonly = true)
+    private ArtifactRepository localRepository;
 
-    @Parameter
+    @Parameter(defaultValue = "\${project}", readonly = true)
+    private MavenProject project;
+
+    @Component
+    private DependencyTreeBuilder dependencyTreeBuilder
+
+    @Parameter(readonly = true)
     private List<String> groupIdExcludes
 
-    @Parameter
+    @Parameter(readonly = true)
     private List<String> artifactIdExcludes
 
-    @Parameter(defaultValue = "compile")
-    private String scope
+    @Parameter(readonly = true)
+    private List<String> scopes
 
     void execute() {
         try {
-            /* ${object} is used inside strings for string substitution, it gets replaced with object.toString() */
-            def outputFile = new File("${mavenProject.build.directory}/dependencies.html")
+            //path strings for I/O
+            def buildDir = project.build.directory
+            def outputFilePath = "${buildDir}/dependencies.html"
 
-            executeOnShell("mvn -q dependency:resolve", mavenProject.basedir)
-            def commandOutput = executeOnShell("mvn -o dependency:list", mavenProject.basedir)
-
-            def dependencyList = new ArrayList<Dependency>();
-            def regex = getPattern(scope)
-            commandOutput.split("\n").each { String line ->
-                if (regex.matcher(line).find()) {
-                    def dependencyString = line.replace("[INFO]    ", "")
-                    def dependencyStringSplit = dependencyString.split(":")
-
-                    def dependency = new Dependency(
-                            groupId: dependencyStringSplit[0],
-                            artifactId: dependencyStringSplit[1],
-                            type: dependencyStringSplit[2],
-                            version: dependencyStringSplit[3],
-                            scope: dependencyStringSplit[4]
-                    )
-
-                    if (!dependencyList.contains(dependency)) {
-                        dependencyList.add(dependency)
-                    }
-                }
+            //save all dependencies to dependencyList
+            ArrayList<Dependency> dependencyList = [];
+            dependencyTreeBuilder.buildDependencyTree(project, localRepository, null).children.each {
+                saveDependencies(it, dependencyList)
             }
 
+            //filter out dependencies with unwanted groupId's & artifactId's
             def iter = dependencyList.iterator()
             while (iter.hasNext()) {
                 def dependency = iter.next()
-
-                if (stringContainsWithList(dependency.groupId, groupIdExcludes) || stringContainsWithList(dependency.artifactId, artifactIdExcludes)) {
+                //TODO: prettify filter
+                if (!scopeIncluded(dependency.scope, scopes) ||
+                        idExcluded(dependency.groupId, groupIdExcludes) ||
+                        idExcluded(dependency.artifactId, artifactIdExcludes)) {
                     iter.remove()
                 }
             }
 
-            /* <=> operator = compareTo() */
-            //TODO: move sort impl to Dependency.compareTo() & use .sort() without closure
-            dependencyList.sort { x, y ->
-                if (x.groupId == y.groupId) {
-                    /* 'return' keyword not needed */
-                    x.artifactId <=> y.artifactId
-                } else {
-                    x.groupId <=> y.groupId
-                }
-            }
+            //fill out html-template with Dependency data
+            def dependencyTableElementTemplateString = this.getClass().getResource('/dependency-table-element.template').text
+            def dependencyTableElementTemplate = new Template(template: dependencyTableElementTemplateString)
+            def dependencyTableElementsString = ""
 
-            def dependencyListElementTemplateString = this.getClass().getResource('/dependency.template').text
-            def dependencyListElementTemplate = new Template(template: dependencyListElementTemplateString)
-            def dependencyListElementsHtml = ""
-
-            dependencyList.unique().each {
-                /* empty (obj,obj) map initialization is done by using [:],
-                objects put in have their types evaluated in runtime,
-                so it can be used for all maps if you don't need typesafety */
+            dependencyList.sort().each {
                 def valueMap = [:]
                 valueMap.put("groupId", it.groupId)
                 valueMap.put("artifactId", it.artifactId)
                 valueMap.put("type", it.type)
                 valueMap.put("version", it.version)
-                valueMap.put("scope", it.scope)K
+                valueMap.put("scope", it.scope)
 
-                dependencyListElementsHtml += dependencyListElementTemplate.merge(valueMap)
+                dependencyTableElementsString += dependencyTableElementTemplate.merge(valueMap)
             }
 
             def dependencyListTemplateString = this.getClass().getResource('/dependency-list.template').text
             def dependencyListTemplate = new Template(template: dependencyListTemplateString)
 
             def valueMap = [:]
-            valueMap.put("dependencyList", dependencyListElementsHtml);
-            valueMap.put("projectName", mavenProject.build.finalName);
+            valueMap.put("dependencyList", dependencyTableElementsString);
+            valueMap.put("projectName", project.build.finalName);
 
-            outputFile.write(dependencyListTemplate.merge(valueMap))
-        } catch (Exception ex) {
-            getLog().error(ex)
+            //output finished dependency list to 'outputFilePath'
+            new File(outputFilePath).write(dependencyListTemplate.merge(valueMap))
+        } catch (all) {
+            getLog().error(all)
+            throw all
         }
+    }
+
+    private saveDependencies(DependencyNode node, List<Dependency> dependencyList) {
+        node.children.each {
+            def artifact = it.artifact
+            def dependency = new Dependency(
+                    groupId: artifact.groupId,
+                    artifactId: artifact.artifactId,
+                    type: artifact.type,
+                    version: artifact.version,
+                    scope: artifact.scope
+            )
+
+            if (!dependencyList.contains(dependency)) {
+                dependencyList.add(dependency)
+            }
+            node.children.each {
+                saveDependencies(it, dependencyList)
+            }
+        }
+    }
+
+    static boolean idExcluded(String s, List<String> strings) {
+        def result = false;
+
+        if (strings != null) {
+            strings.each {
+                if (s.contains(it)) result = true
+            }
+        }
+
+        result
+    }
+
+    static boolean scopeIncluded(String scope, List<String> scopeIncludes) {
+        if (scopeIncludes == null) return true
+
+        def result = false
+        scopeIncludes.each {
+            if (scope.equals(it)) result = true
+        }
+
+        result
     }
 
 }

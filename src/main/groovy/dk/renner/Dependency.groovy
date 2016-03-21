@@ -1,6 +1,6 @@
 package dk.renner
 
-class Dependency {
+class Dependency implements Comparable<Dependency> {
 
     String groupId
     String artifactId
@@ -9,13 +9,24 @@ class Dependency {
     String scope
 
     @Override
+    int compareTo(Dependency d) {
+        if (scope != d.scope) {
+            scope <=> d.scope
+        } else if (groupId != d.groupId) {
+            groupId <=> d.groupId
+        } else if (artifactId != d.artifactId) {
+            artifactId <=> d.artifactId
+        } else {
+            version <=> d.version
+        }
+    }
+
+    @Override
     boolean equals(Object obj) {
         def result = false
-
         if (obj != null && obj instanceof Dependency) {
             result = this.id() == obj.id()
         }
-
         return result
     }
 
