@@ -1,0 +1,4 @@
+Use 'list' goal instead of 'tree' - or filter internal dependencies somehow
+Use real filter if one with multiple scopes exist - else implement it if the interface allows it
+Use real filter for excludes - same as above
+Make template better, maybe use reflection somehow, so template only needs a domain object, which it can then use attributes from
