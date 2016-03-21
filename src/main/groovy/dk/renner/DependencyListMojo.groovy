@@ -32,12 +32,11 @@ class DependencyListMojo extends AbstractMojo {
     @Parameter(readonly = true)
     private List<String> scopes
 
+    @Parameter(readonly = true, defaultValue = "dependencies")
+    private String outputFileName
+
     void execute() {
         try {
-            //path strings for I/O
-            def buildDir = project.build.directory
-            def outputFilePath = "${buildDir}/dependencies.html"
-
             //save all dependencies to dependencyList
             ArrayList<Dependency> dependencyList = [];
             dependencyTreeBuilder.buildDependencyTree(project, localRepository, null).children.each {
@@ -79,7 +78,8 @@ class DependencyListMojo extends AbstractMojo {
             valueMap.put("dependencyList", dependencyTableElementsString);
             valueMap.put("projectName", project.build.finalName);
 
-            //output finished dependency list to 'outputFilePath'
+            //output finished dependency list
+            def outputFilePath = "${project.build.directory}/${outputFileName}.html"
             new File(outputFilePath).write(dependencyListTemplate.merge(valueMap))
         } catch (all) {
             getLog().error(all)
