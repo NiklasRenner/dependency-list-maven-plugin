@@ -19,6 +19,7 @@ Maven plugin written in Groovy, for creating a .html file containing a list of p
               <goal>dependency-list</goal>
           </goals>
           <configuration>
+          <outputFileName>file-name</outputFileName>
               <scopes>
                   <scope>compile</scope>
                   <scope>runtime</scope>
@@ -46,6 +47,7 @@ Maven plugin written in Groovy, for creating a .html file containing a list of p
 | artifactId | a artifactId, or part of one, that should be excluded | excludes any artifactId containing the value. doesn't exclude transative dependencies of matches. |
 | scopes | a list of scopes to exclude | see scope. default: include all scopes |
 | scope | 'compile', 'provided', 'runtime' or 'test' | scope determines which scope dependencies need to have to make the list |
+| outputFileName | any valid filename | value 'file-name' results in file named 'file-name.html'. default value: 'dependencies' |
 
 ##### output
 output of plugin is placed in '/target/dependencies.html' of the Maven project
